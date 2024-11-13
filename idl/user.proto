@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "/user";
+
+message RegisterRep {
+  string email = 1;
+  string password = 2;
+  string password_confirm = 3;
+}
+
+message RegisterResp {
+  string user_id = 1;
+}
+
+message LoginRep {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResp {
+  string user_id = 1;
+}
+
+service EchoService {
+  rpc Register (RegisterRep) returns (RegisterResp) {}
+  rpc Login (LoginRep) returns (LoginResp) {}
+}

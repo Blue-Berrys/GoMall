@@ -1,0 +1,17 @@
+// 放置网站首页
+// idl/hello/hello.proto
+syntax = "proto3";
+
+package frontend.home;
+
+option go_package = "frontend/home";
+
+import "api.proto";
+import "frontend/common.proto";
+
+
+service HomeService { //服务名
+  rpc Home(common.Empty) returns(common.Empty) { //生成一个接口也叫Home, 不需要入参和出参
+    option (api.get) = "/";
+  }
+}

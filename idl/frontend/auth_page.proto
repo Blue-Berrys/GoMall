@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package frontend.auth;
+
+option go_package = "frontend/auth";
+
+import "api.proto";
+import "frontend/common.proto";
+
+message LoginRep {
+  string email = 1 [(api.form)="email"]; //将HTTP请求表单中的 email 字段绑定到 LoginRep 结构中的 email 字段
+  string password = 2 [(api.form)="password"]; // post过来用form
+  string next = 3 [(api.query)="next"]; // post过来用form
+}
+
+message RegisterRep {
+  string email = 1 [(api.form)="email"];
+  string password = 2 [(api.form)="password"]; // post过来用form
+  string password_confirm = 3 [(api.form)="password_confirm"];
+}
+
+service AuthService { //服务名
+  rpc login(LoginRep) returns(common.Empty) { // post传入，返回到别的页面，不用返回当前页面，返回用空
+    option (api.post) = "/auth/login";
+  }
+  rpc register(RegisterRep) returns(common.Empty) { // post传入，返回到别的页面，不用返回当前页面，返回用空
+    option (api.post) = "/auth/register";
+  }
+  rpc logout(common.Empty) returns(common.Empty) { // 不需要入参，登录状态从session和cookie获取
+    option (api.post) = "/auth/logout";
+  }
+}

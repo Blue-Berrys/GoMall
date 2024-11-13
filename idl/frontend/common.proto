@@ -1,0 +1,11 @@
+// 放置网站首页
+// idl/hello/hello.proto
+syntax = "proto3";
+
+package frontend.common;
+
+option go_package = "frontend/common";
+
+import "api.proto";
+
+message Empty {}
