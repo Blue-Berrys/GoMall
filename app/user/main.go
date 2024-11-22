@@ -1,20 +1,25 @@
 package main
 
 import (
+	"github.com/Blue-Berrys/GoMall/app/user/biz/dal"
+	"github.com/joho/godotenv"
+	consul "github.com/kitex-contrib/registry-consul"
 	"net"
 	"time"
 
+	"github.com/Blue-Berrys/GoMall/app/user/conf"
+	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/user/echoservice"
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
-	"github.com/Blue-Berrys/GoMall/app/user/conf"
-	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/user/echoservice"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func main() {
+	_ = godotenv.Load(".env")
+	dal.Init()
 	opts := kitexInit()
 
 	svr := echoservice.NewServer(new(EchoServiceImpl), opts...)
@@ -38,6 +43,11 @@ func kitexInit() (opts []server.Option) {
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
 
+	r, err := consul.NewConsulRegister("127.0.0.1:8500")
+	if err != nil {
+		klog.Fatal(err)
+	}
+	opts = append(opts, server.WithRegistry(r))
 	// klog
 	logger := kitexlogrus.NewLogger()
 	klog.SetLogger(logger)
