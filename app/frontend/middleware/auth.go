@@ -2,14 +2,9 @@ package middleware
 
 import (
 	"context"
+	frontendUtils "github.com/Blue-Berrys/GoMall/app/frontend/utlis"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/hertz-contrib/sessions"
-)
-
-type SessionUserIdKey string
-
-const (
-	SessionUserId SessionUserIdKey = "user_id"
 )
 
 func GlobalAuth() app.HandlerFunc {
@@ -18,8 +13,8 @@ func GlobalAuth() app.HandlerFunc {
 		// 从session中获取用户信息，放在context
 		session := sessions.Default(c)
 		userId := session.Get("user_id")
-		ctx = context.WithValue(ctx, SessionUserId, userId) //返回一个新的 context，其中包含了 userId 的值
-		c.Next(ctx)                                         //将带有 userId 的新 context 传递下去，这样后续的处理中就可以从 context 中获取 userId
+		ctx = context.WithValue(ctx, frontendUtils.SessionUserId, userId) //返回一个新的 context，其中包含了 userId 的值
+		c.Next(ctx)                                                       //将带有 userId 的新 context 传递下去，这样后续的处理中就可以从 context 中获取 userId
 	}
 }
 

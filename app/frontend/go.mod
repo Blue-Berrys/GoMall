@@ -4,6 +4,12 @@ go 1.23.3
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
+replace github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/user/echoservice => ../../../rpc_gen/kitex_gen/user/echoservice
+
+require github.com/Blue-Berrys/GoMall/rpc_gen v0.0.0
+
+replace github.com/Blue-Berrys/GoMall/rpc_gen => ../../rpc_gen
+
 require (
 	github.com/cloudwego/hertz v0.9.3
 	github.com/cloudwego/kitex v0.11.3
@@ -52,7 +58,7 @@ require (
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/gomodule/redigo v1.8.9 // indirect
 	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
 	github.com/gorilla/context v1.1.2 // indirect

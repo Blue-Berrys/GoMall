@@ -1,32 +1,48 @@
 package rpc
 
 import (
+	"github.com/Blue-Berrys/GoMall/app/frontend/conf"
+	frontendUtils "github.com/Blue-Berrys/GoMall/app/frontend/utlis"
+	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/cart/cartservice"
+	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/product/productcatalogservice"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/user/echoservice"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/kitex/client"
 	consul "github.com/kitex-contrib/registry-consul"
-	"log"
 	"sync"
 )
 
 var (
-	userClient echoservice.Client
-	once       sync.Once
+	UserClient    echoservice.Client
+	ProductClient productcatalogservice.Client
+	CartClient    cartservice.Client
+	once          sync.Once
 )
 
 func Init() {
 	once.Do(func() {
-
+		iniUserClient()
+		initProductClient()
+		initCartClient()
 	})
 }
 
 func iniUserClient() {
-	r, err := consul.NewConsulRegister("127.0.0.1:8500")
-	if err != nil {
-		hlog.Fatal(err)
-	}
-	Userclient, err = userservice.NewClient("user", client.WithResolver(r))
-	if err != nil {
-		log.Fatal(err)
-	}
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	UserClient, err = echoservice.NewClient("user", client.WithResolver(r))
+	frontendUtils.MustHandleError(err)
+}
+
+func initProductClient() {
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	ProductClient, err = productcatalogservice.NewClient("product", client.WithResolver(r))
+	frontendUtils.MustHandleError(err)
+}
+
+func initCartClient() {
+	r, err := consul.NewConsulResolver(conf.GetConf().Hertz.RegistryAddr)
+	frontendUtils.MustHandleError(err)
+	CartClient, err = cartservice.NewClient("cart", client.WithResolver(r))
+	frontendUtils.MustHandleError(err)
 }

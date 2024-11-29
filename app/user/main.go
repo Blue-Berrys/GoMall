@@ -42,7 +42,6 @@ func kitexInit() (opts []server.Option) {
 	opts = append(opts, server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
-
 	r, err := consul.NewConsulRegister("127.0.0.1:8500")
 	if err != nil {
 		klog.Fatal(err)

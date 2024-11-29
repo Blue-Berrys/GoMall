@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"github.com/Blue-Berrys/GoMall/app/frontend/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/app/frontend/middleware"
 	"github.com/hertz-contrib/sessions"
 	"github.com/hertz-contrib/sessions/redis"
@@ -34,6 +35,7 @@ func main() {
 	}
 	// init dal
 	// dal.Init()
+	rpc.Init()
 	address := conf.GetConf().Hertz.Address
 	h := server.New(server.WithHostPorts(address))
 
@@ -49,17 +51,18 @@ func main() {
 	h.LoadHTMLGlob("template/*")
 	h.Static("/static", "./")
 	h.GET("/about", middleware.Auth(), func(c context.Context, ctx *app.RequestContext) {
-		ctx.HTML(consts.StatusOK, "about.templ", utils.H{"title": "About"})
+		ctx.HTML(consts.StatusOK, "about", utils.H{"title": "About"})
 	})
 	h.GET("/sign-in", func(c context.Context, ctx *app.RequestContext) {
 		data := utils.H{
-			"Title": "Sign in", // 在sign-in.templ中使用.Title才有效
-			"Next":  ctx.Query("next"),
+			"Title": "Sign in",         // 在sign-in.templ中使用.Title才有效
+			"Next":  ctx.Query("next"), //会从 ? 后面的查询参数中找到键为 next 的值
+			// 如 GET /some-path?next=/dashboard
 		}
-		ctx.HTML(consts.StatusOK, "sign-in.templ", data)
+		ctx.HTML(consts.StatusOK, "sign-in", data)
 	})
 	h.GET("/sign-up", func(c context.Context, ctx *app.RequestContext) {
-		ctx.HTML(consts.StatusOK, "sign-up.templ", utils.H{"Title": "Sign up"})
+		ctx.HTML(consts.StatusOK, "sign-up", utils.H{"Title": "Sign up"})
 	})
 	h.Spin()
 }

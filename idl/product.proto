@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package product; //决定命名空间
+
+option go_package = "/product"; //决定生成的 Go 文件的 package 名和其他文件如何导入它
+
+service ProductCatalogService {
+    rpc ListProducts(ListProductReq) returns (ListProductResp) {};
+    rpc GetProduct(GetProductReq) returns (GetProductResp) {};
+    rpc SearchProducts(SearchProductsReq) returns (SearchProductsResp) {};
+}
+
+message ListProductReq {
+    int32 page = 1;
+    int32 page_size = 2;
+    string category_name = 3;
+}
+
+message Product {
+    uint32 id = 1;
+    string name = 2;
+    string description = 3;
+    string picture = 4;
+    float price = 5;
+
+    repeated string categories = 6; //商品可能属于多个分类
+}
+
+message ListProductResp {
+    repeated Product products = 1; //有多个商品
+}
+
+message GetProductReq {
+    uint32 id = 1;
+}
+
+message GetProductResp {
+    Product product = 1;
+}
+
+message SearchProductsReq {
+    string query = 1;
+}
+
+message SearchProductsResp {
+    repeated Product products = 1; //有多个商品
+}

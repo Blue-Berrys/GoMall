@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package frontend.product; //对应的 Go 包会在生成的代码中以 frontend.product 为命名空间
+
+import "api.proto";
+import "frontend/common.proto";
+
+option go_package = "/frontend/product"; //为生成的 Go 文件指定包路径为 /frontend/product
+
+service ProductService {
+    rpc GetProduct(ProductReq) returns (common.Empty) {
+        option (api.get) = "/product"; //通过 option 指定此 RPC 方法的 HTTP 映射。URL 为 /product
+        // 需要插件（如 grpc-gateway）将 gRPC 转换为 HTTP 请求
+    }
+    rpc SearchProducts(SearchProductsReq) returns (common.Empty) {
+        option (api.get) = "/search";
+    }
+}
+
+message ProductReq {
+    uint32 id = 1 [(api.query) = "id"];//表示在 HTTP 请求的 QueryString 中获取名为 id 的参数，例如：/product?id=123
+}
+
+message SearchProductsReq {
+    string q = 1 [(api.query) = "q"]; // 从query=q里获取数据
+}

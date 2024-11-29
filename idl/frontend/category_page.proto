@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package frontend.category;
+
+import "api.proto";
+import "frontend/common.proto";
+
+option go_package = "/frontend/category";
+
+service CategoryService {
+    rpc Category(CategoryReq) returns (common.Empty) {
+        option (api.get) = "/category/:category";
+        //定义了 HTTP 路径，其中 :category 是路径参数，表示分类名称。
+        //例如，访问 URL /category/books 时，books 会作为路径参数传递到请求中。
+        //在路径中，用 : 标识路径参数，告诉工具（如 gRPC Gateway）这个部分的值是动态的，会被解析为请求参数的一部分
+    }
+}
+
+message CategoryReq {
+    string category = 1 [(api.path) = "category"];
+    //api.path 指定路径参数的映射：
+    //category 字段绑定到路径中的 :category 部分。
+    //例如，当客户端访问 /category/books 时：
+    //books 会被提取并映射到 CategoryReq 中的 category 字段。
+}
