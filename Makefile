@@ -43,5 +43,37 @@ gen-cart-server:
 gen-frontend-cart:
 	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/cart_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
 
+.PHONY:gen-payment-client
+gen-payment-client:
+	@cd rpc_gen && ${CWGO} client --type RPC --service payment --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/payment.proto
+.PHONY:gen-payment-server
+gen-payment-server:
+	@cd app/payment && ${CWGO} server --type RPC --service payment --module ${ROOT_MOD}/app/payment --I ../../idl --idl ../../idl/payment.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
 
+
+.PHONY:gen-checkout-client
+gen-checkout-client:
+	@cd rpc_gen && ${CWGO} client --type RPC --service checkout --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/checkout.proto
+.PHONY:gen-checkout-server
+gen-checkout-server:
+	@cd app/checkout && ${CWGO} server --type RPC --service checkout --module ${ROOT_MOD}/app/checkout --I ../../idl --idl ../../idl/checkout.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
+.PHONY:gen-frontend-checkout
+gen-frontend-checkout:
+	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/checkout_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
+
+.PHONY:gen-order-client
+gen-order-client:
+	@cd rpc_gen && ${CWGO} client --type RPC --service order --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/order.proto
+.PHONY:gen-order-server
+gen-order-server:
+	@cd app/order && ${CWGO} server --type RPC --service order --module ${ROOT_MOD}/app/order --I ../../idl --idl ../../idl/order.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
+gen-frontend-order:
+	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/order_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
+
+.PHONY:gen-email-client
+gen-email-client:
+	@cd rpc_gen && ${CWGO} client --type RPC --service email --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/email.proto
+.PHONY:gen-email-server
+gen-email-server:
+	@cd app/email && ${CWGO} server --type RPC --service email --module ${ROOT_MOD}/app/email --I ../../idl --idl ../../idl/email.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
 

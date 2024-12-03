@@ -35,7 +35,7 @@ func AddItem(ctx context.Context, db *gorm.DB, c *Cart) error {
 			UpdateColumn("qty", gorm.Expr("qty + ?", c.Qty)).Error
 	}
 	// 不存在这行
-	return db.Where(ctx).Create(c).Error
+	return db.WithContext(ctx).Where(&Cart{}).Create(c).Error
 }
 
 func EmptyCart(ctx context.Context, db *gorm.DB, userId uint32) error {
