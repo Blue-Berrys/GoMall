@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/payment/biz/dal/mysql"
 	"github.com/Blue-Berrys/GoMall/app/payment/biz/model"
 	payment "github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/payment"
@@ -34,7 +33,6 @@ func (s *ChargeService) Run(req *payment.ChargeReq) (resp *payment.ChargeResp, e
 		klog.Error(err.Error())
 	}
 	transactionId, err := uuid.NewRandom()
-	fmt.Println(transactionId)
 	if err != nil {
 		return nil, kerrors.NewGRPCBizStatusError(4005002, err.Error())
 	}

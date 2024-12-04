@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/frontend/hertz_gen/frontend/checkout"
 	"github.com/Blue-Berrys/GoMall/app/frontend/infra/rpc"
 	frontendUtils "github.com/Blue-Berrys/GoMall/app/frontend/utlis"
@@ -25,7 +24,7 @@ func (h *CheckoutWaitingService) Run(req *checkout.CheckoutReq) (resp map[string
 	// todo edit your code
 	// 真正的结算
 	userId := frontendUtils.GetUserIdFromCtx(h.Context)
-	p, err := rpc.CheckoutClient.Checkout(h.Context, &rpccheckout.CheckoutReq{
+	_, err = rpc.CheckoutClient.Checkout(h.Context, &rpccheckout.CheckoutReq{
 		UserId:    uint32(userId),
 		Email:     req.Email,
 		Firstname: req.Firstname,
@@ -44,8 +43,6 @@ func (h *CheckoutWaitingService) Run(req *checkout.CheckoutReq) (resp map[string
 			CreditCardCvv:             string(req.Cvv),
 		},
 	})
-	fmt.Println("p: ", p)
-	fmt.Println(err)
 	if err != nil {
 		//klog.Error(err)
 		return nil, err

@@ -5,7 +5,9 @@ go 1.23.3
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 replace github.com/Blue-Berrys/GoMall/rpc_gen => ../../rpc_gen
-
+replace (
+	github.com/Blue-Berrys/GoMall/common/serversuite => ../../common/serversuite
+)
 require (
 	github.com/Blue-Berrys/GoMall/rpc_gen v0.0.0-00010101000000-000000000000
 	github.com/cloudwego/kitex v0.11.3

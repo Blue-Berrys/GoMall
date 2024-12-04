@@ -17,7 +17,6 @@ func ConsumerInit() {
 		err := proto.Unmarshal(msg.Data, &req) //反序列化得到能看的消息
 		if err != nil {
 			klog.Error(err)
-			return
 		}
 
 		noopEmail := notify.NewNoopEmail()

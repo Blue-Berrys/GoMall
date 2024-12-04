@@ -1,24 +1,23 @@
 package main
 
 import (
-	"github.com/Blue-Berrys/GoMall/app/checkout/infra/rpc"
-	"github.com/joho/godotenv"
-	consul "github.com/kitex-contrib/registry-consul"
-	"net"
-	"time"
-
 	"github.com/Blue-Berrys/GoMall/app/checkout/conf"
+	"github.com/Blue-Berrys/GoMall/app/checkout/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/checkout/checkoutservice"
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
+	"github.com/joho/godotenv"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
+	consul "github.com/kitex-contrib/registry-consul"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"net"
+	"time"
 )
 
 func main() {
 	_ = godotenv.Load()
-	mq.Init()
 	//dal.Init() //用不到数据库
 	rpc.InitClient()
 	opts := kitexInit()

@@ -5,6 +5,7 @@ import (
 	"github.com/Blue-Berrys/GoMall/app/checkout/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/cart"
 	checkout "github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/checkout"
+	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/email"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/order"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/payment"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/product"
@@ -89,6 +90,19 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 	}
 	klog.Info(paymentResult)
 	resp = &checkout.CheckoutResp{OrderId: orderId, TransactionId: paymentResult.TransactionId}
+
+	// 发送邮件消息
+	_, err = rpc.EmailClient.Send(s.ctx, &email.EmailReq{
+		From:        "from@example.com",
+		To:          req.Email,
+		ContentType: "text/plain",
+		Subject:     "You have just created an order in the CloudWeGo Shop",
+		Content:     "You have just created an order in the CloudWeGo Shop",
+	})
+	if err != nil {
+		klog.Error(err)
+		return nil, err
+	}
 
 	//清空购物车
 	_, err = rpc.CartClient.EmptyCart(s.ctx, &cart.EmptyCartReq{UserId: req.UserId})

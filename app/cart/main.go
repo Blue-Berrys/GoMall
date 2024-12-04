@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/Blue-Berrys/GoMall/app/cart/biz/dal"
 	"github.com/Blue-Berrys/GoMall/app/cart/rpc"
+	"github.com/Blue-Berrys/GoMall/common/serversuite"
 	"github.com/joho/godotenv"
-	consul "github.com/kitex-contrib/registry-consul"
 	"net"
 	"time"
 
@@ -45,11 +45,9 @@ func kitexInit() (opts []server.Option) {
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
 
-	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
-	if err != nil {
-		klog.Fatal(err) //会立即终止程序执行
-	}
-	opts = append(opts, server.WithRegistry(r))
+	opts = append(opts, server.WithServiceAddr(addr), server.WithSuite(serversuite.CommonServerSuite{
+		CurrentServiceName:
+	}))
 
 	// klog
 	logger := kitexlogrus.NewLogger()

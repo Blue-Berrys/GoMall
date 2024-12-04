@@ -44,7 +44,6 @@ func (s *PlaceOrderService) Run(req *order.PlaceOrderReq) (resp *order.PlaceOrde
 			o.Consignee.City = req.Address.City
 			o.Consignee.Country = req.Address.Country
 		}
-		fmt.Println(req.Items)
 		if err = tx.Model(&model.Order{}).Create(o).Error; err != nil {
 			fmt.Println("ORDER TABLE not insert")
 			klog.Errorf("Failed to create OrderItem: %v", err)

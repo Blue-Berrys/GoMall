@@ -10,9 +10,10 @@ import (
 type NoopEmail struct {
 }
 
-func (e *NoopEmail) Send(req *email.EmailReq) {
+func (e *NoopEmail) Send(req *email.EmailReq) error {
 	pretty.Printf("%v\n", req)
 	// pretty 是一个第三方库，常用于格式化输出复杂的 Go 数据结构
+	return nil
 }
 
 func NewNoopEmail() NoopEmail {

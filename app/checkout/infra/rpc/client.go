@@ -4,6 +4,7 @@ import (
 	"github.com/Blue-Berrys/GoMall/app/checkout/conf"
 	checkoutUtils "github.com/Blue-Berrys/GoMall/app/checkout/utils"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/cart/cartservice"
+	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/email/emailservice"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/order/orderservice"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/payment/paymentservice"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/product/productcatalogservice"
@@ -20,6 +21,7 @@ var (
 	ProductClient productcatalogservice.Client
 	PaymentClient paymentservice.Client
 	OrderClient   orderservice.Client
+	EmailClient   emailservice.Client
 	once          sync.Once
 	err           error
 )
@@ -30,6 +32,7 @@ func InitClient() {
 		initProductClient()
 		initPaymentClient()
 		initOrderClient()
+		initEmailClient()
 	})
 }
 
@@ -93,5 +96,20 @@ func initOrderClient() {
 		client.WithMetaHandler(transmeta.ClientHTTP2Handler),
 	)
 	OrderClient, err = orderservice.NewClient("order", opts...)
+	checkoutUtils.MustHandleError(err)
+}
+
+func initEmailClient() {
+	var opts []client.Option
+	r, err := consul.NewConsulResolver(conf.GetConf().Registry.RegistryAddress[0])
+	checkoutUtils.MustHandleError(err)
+
+	opts = append(opts, client.WithResolver(r))
+	opts = append(opts,
+		client.WithClientBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: conf.GetConf().Kitex.Service}),
+		client.WithTransportProtocol(transport.GRPC),
+		client.WithMetaHandler(transmeta.ClientHTTP2Handler),
+	)
+	EmailClient, err = emailservice.NewClient("email", opts...)
 	checkoutUtils.MustHandleError(err)
 }

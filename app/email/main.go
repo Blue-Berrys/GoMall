@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/Blue-Berrys/GoMall/app/email/biz/consumer"
 	"github.com/Blue-Berrys/GoMall/app/email/infra/mq"
+	consul "github.com/kitex-contrib/registry-consul"
 	"net"
 	"time"
 
@@ -17,6 +19,7 @@ import (
 
 func main() {
 	mq.Init()
+	consumer.Init()
 	opts := kitexInit()
 
 	svr := emailservice.NewServer(new(EmailServiceImpl), opts...)
@@ -39,6 +42,12 @@ func kitexInit() (opts []server.Option) {
 	opts = append(opts, server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
+
+	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
+	if err != nil {
+		panic(err)
+	}
+	opts = append(opts, server.WithRegistry(r))
 
 	// klog
 	logger := kitexlogrus.NewLogger()
