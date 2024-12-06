@@ -13,7 +13,7 @@ import (
 
 var Registry *prometheus.Registry // 注册中心
 
-func InitMetric(serviceName, metricsPort, registryAddr string) {
+func InitMetric(serviceName, metricsPort, registryAddr string) (registry.Registry, *registry.Info) {
 	Registry = prometheus.NewRegistry()
 	//注册 Go 语言运行时的默认指标，例如：内存分配（go_memstats_alloc_bytes）GC 次数（go_gc_duration_seconds）协程数量（go_goroutines）
 	Registry.MustRegister(collectors.NewGoCollector())
@@ -39,4 +39,5 @@ func InitMetric(serviceName, metricsPort, registryAddr string) {
 	http.Handle("/metrics", promhttp.HandlerFor(Registry, promhttp.HandlerOpts{}))
 	// 启动一个 HTTP 服务器，监听 metricsPort
 	go http.ListenAndServe(metricsPort, nil)
+	return r, registryInfo
 }

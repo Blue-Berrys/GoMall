@@ -1,23 +1,34 @@
 package main
 
 import (
+	"context"
 	"github.com/Blue-Berrys/GoMall/app/checkout/conf"
 	"github.com/Blue-Berrys/GoMall/app/checkout/infra/rpc"
+	"github.com/Blue-Berrys/GoMall/common/mtl"
+	"github.com/Blue-Berrys/GoMall/common/serversuite"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/checkout/checkoutservice"
 	"github.com/cloudwego/kitex/pkg/klog"
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	"github.com/joho/godotenv"
 	kitexlogrus "github.com/kitex-contrib/obs-opentelemetry/logging/logrus"
-	consul "github.com/kitex-contrib/registry-consul"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"net"
 	"time"
 )
 
+var (
+	ServiceName  = conf.GetConf().Kitex.Service
+	MetricsPort  = conf.GetConf().Kitex.MetricsPort
+	RegistryAddr = conf.GetConf().Registry.RegistryAddress[0]
+)
+
 func main() {
 	_ = godotenv.Load()
+	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
 	//dal.Init() //用不到数据库
 	rpc.InitClient()
 	opts := kitexInit()
@@ -43,11 +54,12 @@ func kitexInit() (opts []server.Option) {
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
 
-	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
-	if err != nil {
-		klog.Fatal(err) //会立即终止程序执行
-	}
-	opts = append(opts, server.WithRegistry(r))
+	// server.WithSuite是配置suite用的
+	// server.WithSuite suite 必须实现 Options() 方法即 CommonServerSuite.Options() 方法并将返回的选项追加到服务配置中
+	opts = append(opts, server.WithSuite(serversuite.CommonServerSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 
 	// klog
 	logger := kitexlogrus.NewLogger()

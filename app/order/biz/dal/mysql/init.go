@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/order/biz/model"
 	"github.com/Blue-Berrys/GoMall/app/order/conf"
+	"gorm.io/plugin/opentelemetry/tracing"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -27,6 +28,9 @@ func Init() {
 			SkipDefaultTransaction: true,
 		},
 	)
+	if err := DB.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
+		panic(err)
+	}
 	DB.AutoMigrate(&model.Order{}, &model.OrderItem{})
 	if err != nil {
 		panic(err)

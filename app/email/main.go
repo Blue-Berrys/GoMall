@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"github.com/Blue-Berrys/GoMall/app/email/biz/consumer"
 	"github.com/Blue-Berrys/GoMall/app/email/infra/mq"
-	consul "github.com/kitex-contrib/registry-consul"
+	"github.com/Blue-Berrys/GoMall/common/mtl"
+	"github.com/Blue-Berrys/GoMall/common/serversuite"
 	"net"
 	"time"
 
@@ -17,7 +19,15 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+var (
+	ServiceName  = conf.GetConf().Kitex.Service
+	MetricsPort  = conf.GetConf().Kitex.MetricsPort
+	RegistryAddr = conf.GetConf().Registry.RegistryAddress[0]
+)
+
 func main() {
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background())
 	mq.Init()
 	consumer.Init()
 	opts := kitexInit()
@@ -43,11 +53,12 @@ func kitexInit() (opts []server.Option) {
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
 
-	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
-	if err != nil {
-		panic(err)
-	}
-	opts = append(opts, server.WithRegistry(r))
+	// server.WithSuite是配置suite用的
+	// server.WithSuite suite 必须实现 Options() 方法即 CommonServerSuite.Options() 方法并将返回的选项追加到服务配置中
+	opts = append(opts, server.WithSuite(serversuite.CommonServerSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 
 	// klog
 	logger := kitexlogrus.NewLogger()

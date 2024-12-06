@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"github.com/Blue-Berrys/GoMall/app/product/biz/dal"
+	"github.com/Blue-Berrys/GoMall/common/mtl"
+	"github.com/Blue-Berrys/GoMall/common/serversuite"
 	"github.com/joho/godotenv"
-	consul "github.com/kitex-contrib/registry-consul"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"net"
 	"time"
@@ -17,8 +19,17 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var (
+	ServiceName  = conf.GetConf().Kitex.Service
+	MetricsPort  = conf.GetConf().Kitex.MetricsPort
+	RegistryAddr = conf.GetConf().Registry.RegistryAddress[0]
+)
+
 func main() {
 	_ = godotenv.Load()
+	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
 	dal.Init()
 	opts := kitexInit()
 
@@ -42,11 +53,13 @@ func kitexInit() (opts []server.Option) {
 	opts = append(opts, server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 		ServiceName: conf.GetConf().Kitex.Service,
 	}))
-	r, err := consul.NewConsulRegister(conf.GetConf().Registry.RegistryAddress[0])
-	if err != nil {
-		klog.Error(err)
-	}
-	opts = append(opts, server.WithRegistry(r))
+
+	// server.WithSuite是配置suite用的
+	// server.WithSuite suite 必须实现 Options() 方法即 CommonServerSuite.Options() 方法并将返回的选项追加到服务配置中
+	opts = append(opts, server.WithSuite(serversuite.CommonServerSuite{
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
+	}))
 
 	// service info
 	opts = append(opts, server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{

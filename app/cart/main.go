@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"github.com/Blue-Berrys/GoMall/app/cart/biz/dal"
 	"github.com/Blue-Berrys/GoMall/app/cart/rpc"
+	"github.com/Blue-Berrys/GoMall/common/mtl"
 	"github.com/Blue-Berrys/GoMall/common/serversuite"
 	"github.com/joho/godotenv"
 	"net"
@@ -18,8 +20,17 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+var (
+	ServiceName  = conf.GetConf().Kitex.Service
+	MetricsPort  = conf.GetConf().Kitex.MetricsPort
+	RegistryAddr = conf.GetConf().Registry.RegistryAddress[0]
+)
+
 func main() {
 	_ = godotenv.Load()
+	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr) // 要在dal和rpc前面，dal和rpc会以来metrics
+	p := mtl.InitTracing(ServiceName)
+	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
 	dal.Init()
 	rpc.InitClient() // 要用到product的服务
 	opts := kitexInit()
@@ -46,7 +57,8 @@ func kitexInit() (opts []server.Option) {
 	}))
 
 	opts = append(opts, server.WithServiceAddr(addr), server.WithSuite(serversuite.CommonServerSuite{
-		CurrentServiceName:
+		CurrentServiceName: ServiceName,
+		RegistryAddr:       RegistryAddr,
 	}))
 
 	// klog

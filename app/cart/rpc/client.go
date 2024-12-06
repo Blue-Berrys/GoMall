@@ -1,18 +1,20 @@
 package rpc
 
 import (
-	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/cart/conf"
 	cartUtils "github.com/Blue-Berrys/GoMall/app/cart/utils"
+	"github.com/Blue-Berrys/GoMall/common/clientsuite"
 	"github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/product/productcatalogservice"
 	"github.com/cloudwego/kitex/client"
-	consul "github.com/kitex-contrib/registry-consul"
 	"sync"
 )
 
 var (
 	ProductClient productcatalogservice.Client
 	once          sync.Once
+	ServiceName   = conf.GetConf().Kitex.Service
+	RegistryAddr  = conf.GetConf().Registry.RegistryAddress[0]
+	err           error
 )
 
 func InitClient() {
@@ -22,10 +24,13 @@ func InitClient() {
 }
 
 func initProductClient() {
-	r, err := consul.NewConsulResolver(conf.GetConf().Registry.RegistryAddress[0])
-	//r, err := consul.NewConsulResolver("127.0.0.1:8500")
+	opts := []client.Option{
+		client.WithSuite(clientsuite.CommonClientSuite{
+			CurrentServerName: ServiceName,
+			RegistryAddr:      RegistryAddr,
+		}),
+	}
+
+	ProductClient, err = productcatalogservice.NewClient("product", opts...)
 	cartUtils.MustHandleError(err)
-	ProductClient, err = productcatalogservice.NewClient("product", client.WithResolver(r))
-	cartUtils.MustHandleError(err)
-	fmt.Println(err)
 }

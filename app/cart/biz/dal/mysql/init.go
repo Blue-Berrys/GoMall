@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/cart/biz/model"
 	"github.com/Blue-Berrys/GoMall/app/cart/conf"
-	"os"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
+	"os"
 )
 
 var (
@@ -26,6 +26,9 @@ func Init() {
 			SkipDefaultTransaction: true,
 		},
 	)
+	if err := DB.Use(tracing.NewPlugin(tracing.WithoutMetrics())); err != nil {
+		panic(err)
+	}
 	DB.AutoMigrate(&model.Cart{})
 	if err != nil {
 		panic(err)

@@ -7,6 +7,7 @@ import (
 	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/cloudwego/kitex/server"
 	"github.com/kitex-contrib/monitor-prometheus"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	consul "github.com/kitex-contrib/registry-consul"
 )
 
@@ -29,6 +30,9 @@ func (s CommonServerSuite) Options() []server.Option {
 		// "" 和 "" 通常是服务名称和环境标识的占位符，因为我们已经启动了自定义的metricsServer，所以这里置空。
 		//prometheus.WithDisableServer(true)：禁用了服务器端的某些默认追踪功能（如自动记录某些指标）。
 		//prometheus.WithRegistry(mtl.Registry)：指定 Prometheus 使用的注册表，用于存储和暴露自定义指标
+
+		// 增加追踪服务
+		server.WithSuite(tracing.NewServerSuite()),
 	}
 
 	r, err := consul.NewConsulRegister(s.RegistryAddr)

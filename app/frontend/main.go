@@ -6,6 +6,9 @@ import (
 	"context"
 	"github.com/Blue-Berrys/GoMall/app/frontend/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/app/frontend/middleware"
+	frontendUtils "github.com/Blue-Berrys/GoMall/app/frontend/utlis"
+	"github.com/Blue-Berrys/GoMall/common/mtl"
+	prometheus "github.com/hertz-contrib/monitor-prometheus"
 	"github.com/hertz-contrib/sessions"
 	"github.com/hertz-contrib/sessions/redis"
 	"github.com/joho/godotenv"
@@ -23,34 +26,58 @@ import (
 	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/gzip"
 	"github.com/hertz-contrib/logger/accesslog"
-	hertzlogrus "github.com/hertz-contrib/logger/logrus"
+	hertzlogrus "github.com/hertz-contrib/logger/logrus"                       //不带链路
+	hertzobslogrus "github.com/hertz-contrib/obs-opentelemetry/logging/logrus" //带链路
+	hertzotelprovider "github.com/hertz-contrib/obs-opentelemetry/provider"
+	hertztracing "github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"github.com/hertz-contrib/pprof"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+var (
+	ServiceName  = frontendUtils.ServiceName
+	MetricsPort  = conf.GetConf().Hertz.MetricsPort
+	RegistryAddr = conf.GetConf().Hertz.RegistryAddr
+)
+
 func main() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("/opt/gomall/frontend/.env"); err != nil {
 		panic(err)
 	}
-	// init dal
+	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
+	defer consul.Deregister(registryInfo) // 这个hertz在停止服务的时候可以移除(反注册)prometheus实例
+	p := hertzotelprovider.NewOpenTelemetryProvider(
+		hertzotelprovider.WithServiceName(ServiceName),
+		//hertzotelprovider.WithExportEndpoint(),
+		hertzotelprovider.WithInsecure(),
+		hertzotelprovider.WithEnableMetrics(false),
+	)
+	defer p.Shutdown(context.Background())
+	// 这样可以避免其他服务继续尝试访问已经下线的服务，从而防止出现请求失败或资源浪费。
 	// dal.Init()
 	rpc.Init()
 	address := conf.GetConf().Hertz.Address
-	h := server.New(server.WithHostPorts(address))
+
+	tracer, cfg := hertztracing.NewServerTracer()
+
+	h := server.New(server.WithHostPorts(address),
+		server.WithTracer(prometheus.NewServerTracer("", "", prometheus.WithDisableServer(true),
+			prometheus.WithRegistry(mtl.Registry),
+		)),
+		tracer,
+	)
+
+	h.Use(hertztracing.ServerMiddleware(cfg))
 
 	registerMiddleware(h)
-
-	// add a ping route to test
-	h.GET("/ping", func(c context.Context, ctx *app.RequestContext) {
-		ctx.JSON(consts.StatusOK, utils.H{"ping": "pong"})
-	})
 
 	router.GeneratedRegister(h)
 
 	h.LoadHTMLGlob("template/*")
 	h.Static("/static", "./")
 	h.GET("/about", middleware.Auth(), func(c context.Context, ctx *app.RequestContext) {
+		hlog.CtxInfof(c, "CloudWeGo shop about page") // Infof 是格式化输出日志的方法
 		ctx.HTML(consts.StatusOK, "about", utils.H{"title": "About"})
 	})
 	h.GET("/sign-in", func(c context.Context, ctx *app.RequestContext) {
@@ -71,9 +98,18 @@ func registerMiddleware(h *server.Hertz) {
 	store, _ := redis.NewStore(10, "tcp", conf.GetConf().Redis.Address, "", []byte(os.Getenv("SESSION_SECRET")))
 	h.Use(sessions.New("cloudwegoshop", store))
 	// log
-	logger := hertzlogrus.NewLogger()
+	// hertzlogrus.NewLogger() 实际返回了一个 Hertz 兼容的日志对象。
+	// hertzobslogrus.NewLogger() 这是为 OpenTelemetry 的日志系统 提供的 logrus 适配器。
+	// OpenTelemetry 的日志系统需要一个 Logger，用于记录与分布式追踪相关的上下文信息。
+	logger := hertzobslogrus.NewLogger(hertzobslogrus.WithLogger(hertzlogrus.NewLogger().Logger()))
 	hlog.SetLogger(logger)
 	hlog.SetLevel(conf.LogLevel())
+	var flushInterVal time.Duration
+	if os.Getenv("GO_ENV") == "online" {
+		flushInterVal = time.Minute
+	} else {
+		flushInterVal = time.Second
+	}
 	asyncWriter := &zapcore.BufferedWriteSyncer{
 		WS: zapcore.AddSync(&lumberjack.Logger{
 			Filename:   conf.GetConf().Hertz.LogFileName,
@@ -81,7 +117,7 @@ func registerMiddleware(h *server.Hertz) {
 			MaxBackups: conf.GetConf().Hertz.LogMaxBackups,
 			MaxAge:     conf.GetConf().Hertz.LogMaxAge,
 		}),
-		FlushInterval: time.Minute,
+		FlushInterval: flushInterVal, // 修改刷新时间
 	}
 	hlog.SetOutput(asyncWriter)
 	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
