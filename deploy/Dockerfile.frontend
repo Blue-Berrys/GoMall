@@ -7,23 +7,23 @@ ENV GOPROXY=https://goproxy.cn,direct
 
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 # 把go.mod go.sum拷贝到工作目录下
-COPY app/frontend/go.mod app/frontend/go.sum ./app/frontend/
-COPY rpc_gen rpc_gen
-COPY common common
+COPY ../app/frontend/go.mod app/frontend/go.sum ./app/frontend/
+COPY ../rpc_gen rpc_gen
+COPY ../common common
 # RUN执行命令,进入app/frontend/目录，然后下载项目依赖，并验证依赖的完整性。
 RUN cd app/frontend/ && go mod download && go mod verify
 # 本地的app/frontend/ 拷贝到容器里app/frontend/
-COPY app/frontend/ app/frontend/
+COPY ../app/frontend app/frontend/
 
 
 
 RUN cd app/frontend/ && go build -v -o /opt/gomall/frontend/server
 # /opt/gomall/frontend/ 用于存放编译后的程序、配置文件和静态资源
-COPY app/frontend/conf /opt/gomall/frontend/conf
-COPY app/frontend/static /opt/gomall/frontend/static
-COPY app/frontend/template /opt/gomall/frontend/template
+COPY ../app/frontend/conf /opt/gomall/frontend/conf
+COPY ../app/frontend/static /opt/gomall/frontend/static
+COPY ../app/frontend/template /opt/gomall/frontend/template
 
 WORKDIR /opt/gomall/frontend
-COPY app/frontend/.env /opt/gomall/frontend/.env
+COPY ../app/frontend/.env /opt/gomall/frontend/.env
 EXPOSE 8080
 CMD ["./server"]
