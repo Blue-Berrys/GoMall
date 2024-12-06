@@ -42,7 +42,7 @@ var (
 )
 
 func main() {
-	if err := godotenv.Load("/opt/gomall/frontend/.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
 	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
