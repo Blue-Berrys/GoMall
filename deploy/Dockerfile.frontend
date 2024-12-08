@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.23 AS builder
 # 基于基础镜像golang:1.23
 WORKDIR /usr/src/gomall
 
@@ -15,9 +15,11 @@ RUN cd app/frontend/ && go mod download && go mod verify
 # 本地的app/frontend/ 拷贝到容器里app/frontend/
 COPY ../app/frontend app/frontend/
 
-
-
 RUN cd app/frontend/ && go build -v -o /opt/gomall/frontend/server
+
+FROM busybox
+COPY --from=builder /opt/gomall/frontend/server /opt/gomall/frontend/server
+
 # /opt/gomall/frontend/ 用于存放编译后的程序、配置文件和静态资源
 COPY ../app/frontend/conf /opt/gomall/frontend/conf
 COPY ../app/frontend/static /opt/gomall/frontend/static

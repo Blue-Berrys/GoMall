@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"github.com/Blue-Berrys/GoMall/app/product/biz/dal/mysql"
+	"github.com/Blue-Berrys/GoMall/app/product/biz/dal/redis"
 	"github.com/Blue-Berrys/GoMall/app/product/biz/model"
 	product "github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/product"
 	"github.com/cloudwego/kitex/pkg/kerrors"
@@ -21,7 +22,8 @@ func (s *GetProductService) Run(req *product.GetProductReq) (resp *product.GetPr
 	if req.Id == 0 { // 如果请求的商品ID为0
 		return nil, kerrors.NewGRPCBizStatusError(2004001, "product id is required")
 	}
-	productQuery := model.NewProductQuery(s.ctx, mysql.DB)
+	//productQuery := model.NewProductQuery(s.ctx, mysql.DB)
+	productQuery := model.NewCachedProductQuery(s.ctx, mysql.DB, redis.RedisClient)
 	p, err := productQuery.GetById(int(req.Id))
 	if err != nil {
 		return nil, err

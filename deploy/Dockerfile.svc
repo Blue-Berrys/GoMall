@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.23 AS builder
 # 基于基础镜像golang:1.23
 WORKDIR /usr/src/gomall
 
@@ -18,6 +18,11 @@ RUN cd app/${SVC}/ && go mod download && go mod verify
 COPY ../app/${SVC} app/${SVC}/
 
 RUN cd app/${SVC}/ && go build -v -o /opt/gomall/${SVC}/server
+
+FROM busybox
+ARG SVC
+COPY --from=builder /opt/gomall/${SVC}/server /opt/gomall/${SVC}/server
+
 # /opt/gomall/${SVC}/ 用于存放编译后的程序、配置文件和静态资源
 COPY ../app/${SVC}/conf /opt/gomall/${SVC}/conf
 

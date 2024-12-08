@@ -27,7 +27,7 @@ var (
 )
 
 func main() {
-	_ = godotenv.Load()
+	_ = godotenv.Load("/opt/gomall/product/.env")
 	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr) // 要在dal和rpc前面，dal和rpc会以来metrics
 	p := mtl.InitTracing(ServiceName)
 	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
