@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 services:
   consul:
     image: 'hashicorp/consul'
@@ -7,11 +7,19 @@ services:
 
   mysql:
     image: 'mysql:latest'
+    volumes:
+      - ./deploy/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - 3307:3306
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=demo_proto
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   redis:
     image: 'redis:latest'
@@ -64,3 +72,184 @@ services:
       - ./deploy/config/promtail.yml:/etc/promtail/config.yml
       - ./app/frontend/log:/logs/frontend
     command: -config.file=/etc/promtail/config.yml
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.frontend
+    ports:
+      - "8080:8080"
+    environment:
+      - SESSION_SECRET="SESSION_SECRET"
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+      - GO_ENV=test
+    depends_on:
+      - consul
+      - redis
+    volumes: # 挂载
+      - ./app/frontend/conf/test:/opt/gomall/frontend/conf/test
+
+  product:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=product
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+#      - GO_ENV=test
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+
+    volumes: # 挂载
+      - ./app/product/conf/test/:/opt/gomall/product/conf/test/
+
+  cart:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=cart
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+
+    volumes: # 挂载
+      - ./app/cart/conf/test/:/opt/gomall/cart/conf/test/
+
+  checkout:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=checkout
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes: # 挂载
+      - ./app/checkout/conf/test/:/opt/gomall/checkout/conf/test/
+
+  payment:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=payment
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes: # 挂载
+      - ./app/payment/conf/test/:/opt/gomall/payment/conf/test/
+
+  user:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=user
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes: # 挂载
+      - ./app/user/conf/test/:/opt/gomall/user/conf/test/
+
+  email:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=email
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes: # 挂载
+      - ./app/email/conf/test/:/opt/gomall/email/conf/test/
+
+  order:
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile.svc
+      args:
+        - SVC=order
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+      - OTL_EXPORTER_OTLP_INSECURE=true
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes: # 挂载
+      - ./app/order/conf/test/:/opt/gomall/order/conf/test/

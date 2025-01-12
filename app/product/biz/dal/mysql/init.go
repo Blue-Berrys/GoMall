@@ -3,6 +3,7 @@ package mysql
 import (
 	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/product/biz/model"
+	"github.com/Blue-Berrys/GoMall/app/product/conf"
 	"github.com/cloudwego/kitex/pkg/klog"
 	"gorm.io/plugin/opentelemetry/tracing"
 	"os"
@@ -17,9 +18,9 @@ var (
 )
 
 func Init() {
-	//dsn := fmt.Sprintf(conf.GetConf().MySQL.DSN, os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT"))
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/product?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"),
-		os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT")) //test测试的时候要用这个
+	dsn := fmt.Sprintf(conf.GetConf().MySQL.DSN, os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT"))
+	//dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/product?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("MYSQL_USER"), os.Getenv("MYSQL_PASSWORD"),
+	//	os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT")) //test测试的时候要用这个
 	DB, err = gorm.Open(mysql.Open(dsn),
 		&gorm.Config{
 			PrepareStmt:            true,
