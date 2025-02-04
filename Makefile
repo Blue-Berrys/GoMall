@@ -22,10 +22,10 @@ gen-user-server:
 
 .PHONY:gen-product-client
 gen-product-client:
-	@cd rpc_gen && ${CWGO} client --type RPC --service product --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/product.proto
+	@cd rpc_gen && cwgo client --type RPC --service product --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/product.proto
 .PHONY:gen-product-server
 gen-product-server:
-	@cd app/product && ${CWGO} server --type RPC --service product --module ${ROOT_MOD}/app/product --I ../../idl --idl ../../idl/product.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
+	@cd app/product && cwgo server --type RPC --service product --module ${ROOT_MOD}/app/product --I ../../idl --idl ../../idl/product.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
 .PHONY:gen-frontend-product
 gen-frontend-product:
 	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/product_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/

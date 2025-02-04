@@ -29,6 +29,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingUnary),
 	),
+	"BatchGetProduct": kitex.NewMethodInfo(
+		batchGetProductHandler,
+		newBatchGetProductArgs,
+		newBatchGetProductResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingUnary),
+	),
 	"SearchProducts": kitex.NewMethodInfo(
 		searchProductsHandler,
 		newSearchProductsArgs,
@@ -408,6 +415,159 @@ func (p *GetProductResult) GetResult() interface{} {
 	return p.Success
 }
 
+func batchGetProductHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	switch s := arg.(type) {
+	case *streaming.Args:
+		st := s.Stream
+		req := new(product.BatchGetProductReq)
+		if err := st.RecvMsg(req); err != nil {
+			return err
+		}
+		resp, err := handler.(product.ProductCatalogService).BatchGetProduct(ctx, req)
+		if err != nil {
+			return err
+		}
+		return st.SendMsg(resp)
+	case *BatchGetProductArgs:
+		success, err := handler.(product.ProductCatalogService).BatchGetProduct(ctx, s.Req)
+		if err != nil {
+			return err
+		}
+		realResult := result.(*BatchGetProductResult)
+		realResult.Success = success
+		return nil
+	default:
+		return errInvalidMessageType
+	}
+}
+func newBatchGetProductArgs() interface{} {
+	return &BatchGetProductArgs{}
+}
+
+func newBatchGetProductResult() interface{} {
+	return &BatchGetProductResult{}
+}
+
+type BatchGetProductArgs struct {
+	Req *product.BatchGetProductReq
+}
+
+func (p *BatchGetProductArgs) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetReq() {
+		p.Req = new(product.BatchGetProductReq)
+	}
+	return p.Req.FastRead(buf, _type, number)
+}
+
+func (p *BatchGetProductArgs) FastWrite(buf []byte) (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.FastWrite(buf)
+}
+
+func (p *BatchGetProductArgs) Size() (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.Size()
+}
+
+func (p *BatchGetProductArgs) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetReq() {
+		return out, nil
+	}
+	return proto.Marshal(p.Req)
+}
+
+func (p *BatchGetProductArgs) Unmarshal(in []byte) error {
+	msg := new(product.BatchGetProductReq)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Req = msg
+	return nil
+}
+
+var BatchGetProductArgs_Req_DEFAULT *product.BatchGetProductReq
+
+func (p *BatchGetProductArgs) GetReq() *product.BatchGetProductReq {
+	if !p.IsSetReq() {
+		return BatchGetProductArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+func (p *BatchGetProductArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *BatchGetProductArgs) GetFirstArgument() interface{} {
+	return p.Req
+}
+
+type BatchGetProductResult struct {
+	Success *product.BatchGetProductResp
+}
+
+var BatchGetProductResult_Success_DEFAULT *product.BatchGetProductResp
+
+func (p *BatchGetProductResult) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetSuccess() {
+		p.Success = new(product.BatchGetProductResp)
+	}
+	return p.Success.FastRead(buf, _type, number)
+}
+
+func (p *BatchGetProductResult) FastWrite(buf []byte) (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.FastWrite(buf)
+}
+
+func (p *BatchGetProductResult) Size() (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.Size()
+}
+
+func (p *BatchGetProductResult) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetSuccess() {
+		return out, nil
+	}
+	return proto.Marshal(p.Success)
+}
+
+func (p *BatchGetProductResult) Unmarshal(in []byte) error {
+	msg := new(product.BatchGetProductResp)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Success = msg
+	return nil
+}
+
+func (p *BatchGetProductResult) GetSuccess() *product.BatchGetProductResp {
+	if !p.IsSetSuccess() {
+		return BatchGetProductResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+func (p *BatchGetProductResult) SetSuccess(x interface{}) {
+	p.Success = x.(*product.BatchGetProductResp)
+}
+
+func (p *BatchGetProductResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *BatchGetProductResult) GetResult() interface{} {
+	return p.Success
+}
+
 func searchProductsHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	switch s := arg.(type) {
 	case *streaming.Args:
@@ -586,6 +746,16 @@ func (p *kClient) GetProduct(ctx context.Context, Req *product.GetProductReq) (r
 	_args.Req = Req
 	var _result GetProductResult
 	if err = p.c.Call(ctx, "GetProduct", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) BatchGetProduct(ctx context.Context, Req *product.BatchGetProductReq) (r *product.BatchGetProductResp, err error) {
+	var _args BatchGetProductArgs
+	_args.Req = Req
+	var _result BatchGetProductResult
+	if err = p.c.Call(ctx, "BatchGetProduct", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

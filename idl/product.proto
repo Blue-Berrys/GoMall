@@ -7,6 +7,7 @@ option go_package = "/product"; //决定生成的 Go 文件的 package 名和其
 service ProductCatalogService {
     rpc ListProducts(ListProductReq) returns (ListProductResp) {};
     rpc GetProduct(GetProductReq) returns (GetProductResp) {};
+    rpc BatchGetProduct(BatchGetProductReq) returns (BatchGetProductResp) {};
     rpc SearchProducts(SearchProductsReq) returns (SearchProductsResp) {};
 }
 
@@ -36,6 +37,14 @@ message GetProductReq {
 
 message GetProductResp {
     Product product = 1;
+}
+
+message BatchGetProductReq {
+    repeated uint32 id = 1;
+}
+
+message BatchGetProductResp {
+    repeated Product product = 1;
 }
 
 message SearchProductsReq {

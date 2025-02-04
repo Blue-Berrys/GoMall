@@ -38,28 +38,34 @@ func (s *CheckoutService) Run(req *checkout.CheckoutReq) (resp *checkout.Checkou
 		return nil, kerrors.NewGRPCBizStatusError(5004001, "cart is empty")
 	}
 
-	// 重写一个批量rpc调用
-	products := map[uint32]*product.Product{}
+	// 重写一个批量rpc调用,只要做一次调用
+	IdList := []uint32{}
 	for _, cartItem := range cartResult.Items {
-		productResp, err := rpc.ProductClient.GetProduct(s.ctx, &product.GetProductReq{Id: cartItem.ProductId})
-		if err != nil {
-			klog.Error(err.Error())
-			return nil, kerrors.NewGRPCBizStatusError(5005002, err.Error())
-		} else {
-			products[cartItem.ProductId] = productResp.Product
-		}
+		IdList = append(IdList, cartItem.ProductId)
+	}
+	productsResp, err := rpc.ProductClient.BatchGetProduct(s.ctx, &product.BatchGetProductReq{
+		Id: IdList,
+	})
+	if err != nil {
+		klog.Error(err.Error())
+		return nil, kerrors.NewGRPCBizStatusError(5005002, err.Error())
+	}
+	// 将产品列表转化为map,才能有索引
+	products := make(map[uint32]*product.Product)
+	for _, product := range productsResp.Product {
+		products[product.Id] = product
 	}
 
 	//拿到每个商品的价格
 	var total float32
 	var ois []*order.OrderItem
 	for _, cartItem := range cartResult.Items {
-		product := products[cartItem.ProductId]
+		prod := products[cartItem.ProductId]
 		// 在循环内重复使用rpc调用，性能影响很大，需要在for循环外面一次性调用，然后遍历赋值
-		if product == nil {
+		if prod == nil {
 			continue
 		}
-		cost := product.Price * float32(cartItem.Quantity)
+		cost := prod.Price * float32(cartItem.Quantity)
 		total += cost
 		ois = append(ois, &order.OrderItem{
 			Item: &cart.CartItem{

@@ -14,6 +14,7 @@ type RPCClient interface {
 	Service() string
 	ListProducts(ctx context.Context, Req *product.ListProductReq, callOptions ...callopt.Option) (r *product.ListProductResp, err error)
 	GetProduct(ctx context.Context, Req *product.GetProductReq, callOptions ...callopt.Option) (r *product.GetProductResp, err error)
+	BatchGetProduct(ctx context.Context, Req *product.BatchGetProductReq, callOptions ...callopt.Option) (r *product.BatchGetProductResp, err error)
 	SearchProducts(ctx context.Context, Req *product.SearchProductsReq, callOptions ...callopt.Option) (r *product.SearchProductsResp, err error)
 }
 
@@ -49,6 +50,10 @@ func (c *clientImpl) ListProducts(ctx context.Context, Req *product.ListProductR
 
 func (c *clientImpl) GetProduct(ctx context.Context, Req *product.GetProductReq, callOptions ...callopt.Option) (r *product.GetProductResp, err error) {
 	return c.kitexClient.GetProduct(ctx, Req, callOptions...)
+}
+
+func (c *clientImpl) BatchGetProduct(ctx context.Context, Req *product.BatchGetProductReq, callOptions ...callopt.Option) (r *product.BatchGetProductResp, err error) {
+	return c.kitexClient.BatchGetProduct(ctx, Req, callOptions...)
 }
 
 func (c *clientImpl) SearchProducts(ctx context.Context, Req *product.SearchProductsReq, callOptions ...callopt.Option) (r *product.SearchProductsResp, err error) {
