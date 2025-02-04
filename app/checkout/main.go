@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Blue-Berrys/GoMall/app/checkout/biz/dal/kafka"
 	"github.com/Blue-Berrys/GoMall/app/checkout/conf"
 	"github.com/Blue-Berrys/GoMall/app/checkout/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/common/mtl"
@@ -25,12 +26,14 @@ var (
 )
 
 func main() {
-	_ = godotenv.Load("/opt/gomall/product/.env")
+	//_ = godotenv.Load("/opt/gomall/product/.env")
+	_ = godotenv.Load(".env")
 	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
 	p := mtl.InitTracing(ServiceName)
 	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
 	//dal.Init() //用不到数据库
 	rpc.InitClient()
+	kafka.Init()
 	opts := kitexInit()
 
 	svr := checkoutservice.NewServer(new(CheckoutServiceImpl), opts...)

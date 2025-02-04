@@ -10,7 +10,7 @@ kitex:
 
 registry:
   registry_address:
-    - consul:8500
+    - localhost:8500
   username: ""
   password: ""
 
@@ -19,7 +19,7 @@ mysql:
   # user 是数据库名
 
 redis:
-  address: "redis:6379"
+  address: "localhost:6378"
   username: ""
   password: ""
   db: 0

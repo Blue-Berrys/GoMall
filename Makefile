@@ -63,12 +63,12 @@ gen-frontend-checkout:
 
 .PHONY:gen-order-client
 gen-order-client:
-	@cd rpc_gen && ${CWGO} client --type RPC --service order --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/order.proto
+	@cd rpc_gen && cwgo client --type RPC --service order --module ${ROOT_MOD}/rpc_gen --I ../idl --idl ../idl/order.proto
 .PHONY:gen-order-server
 gen-order-server:
-	@cd app/order && ${CWGO} server --type RPC --service order --module ${ROOT_MOD}/app/order --I ../../idl --idl ../../idl/order.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
+	@cd app/order && cwgo server --type RPC --service order --module ${ROOT_MOD}/app/order --I ../../idl --idl ../../idl/order.proto --pass "-use ${ROOT_MOD}/rpc_gen/kitex_gen"
 gen-frontend-order:
-	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/order_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
+	@cd app/frontend &&	cwgo server --type HTTP --idl  ../../idl/frontend/order_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
 
 .PHONY:gen-email-client
 gen-email-client:

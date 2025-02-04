@@ -16,7 +16,6 @@ func NewGetCartService(ctx context.Context) *GetCartService {
 
 // Run create note info
 func (s *GetCartService) Run(req *cart.GetCartReq) (resp *cart.GetCartResp, err error) {
-	// Finish your business logic.
 	list, err := model.GetCartByUserId(s.ctx, mysql.DB, req.UserId)
 	var items []*cart.CartItem
 	for _, item := range list {
@@ -25,5 +24,6 @@ func (s *GetCartService) Run(req *cart.GetCartReq) (resp *cart.GetCartResp, err 
 			Quantity:  item.Qty,
 		})
 	}
+	//fmt.Println("items:", items)
 	return &cart.GetCartResp{Items: items}, nil
 }

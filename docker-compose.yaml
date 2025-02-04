@@ -32,6 +32,29 @@ services:
       - 4222:4222 # 客户端口
       - 8222:8222 # 服务端口
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -139,28 +162,28 @@ services:
     volumes: # 挂载
       - ./app/cart/conf/test/:/opt/gomall/cart/conf/test/
 
-  checkout:
-    build:
-      context: .
-      dockerfile: ./deploy/Dockerfile.svc
-      args:
-        - SVC=checkout
-    environment:
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=root
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
-      - OTL_EXPORTER_OTLP_INSECURE=true
-    depends_on:
-      consul:
-        condition: service_started
-      redis:
-        condition: service_started
-      mysql:
-        condition: service_healthy
-    volumes: # 挂载
-      - ./app/checkout/conf/test/:/opt/gomall/checkout/conf/test/
+#  checkout:
+#    build:
+#      context: .
+#      dockerfile: ./deploy/Dockerfile.svc
+#      args:
+#        - SVC=checkout
+#    environment:
+#      - MYSQL_USER=root
+#      - MYSQL_PASSWORD=root
+#      - MYSQL_HOST=mysql
+#      - MYSQL_PORT=3306
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+#      - OTL_EXPORTER_OTLP_INSECURE=true
+#    depends_on:
+#      consul:
+#        condition: service_started
+#      redis:
+#        condition: service_started
+#      mysql:
+#        condition: service_healthy
+#    volumes: # 挂载
+#      - ./app/checkout/conf/test/:/opt/gomall/checkout/conf/test/
 
   payment:
     build:
@@ -231,25 +254,25 @@ services:
     volumes: # 挂载
       - ./app/email/conf/test/:/opt/gomall/email/conf/test/
 
-  order:
-    build:
-      context: .
-      dockerfile: ./deploy/Dockerfile.svc
-      args:
-        - SVC=order
-    environment:
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=root
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
-      - OTL_EXPORTER_OTLP_INSECURE=true
-    depends_on:
-      consul:
-        condition: service_started
-      redis:
-        condition: service_started
-      mysql:
-        condition: service_healthy
-    volumes: # 挂载
-      - ./app/order/conf/test/:/opt/gomall/order/conf/test/
+#  order:
+#    build:
+#      context: .
+#      dockerfile: ./deploy/Dockerfile.svc
+#      args:
+#        - SVC=order
+#    environment:
+#      - MYSQL_USER=root
+#      - MYSQL_PASSWORD=root
+#      - MYSQL_HOST=mysql
+#      - MYSQL_PORT=3306
+#      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-all-in-one:4317
+#      - OTL_EXPORTER_OTLP_INSECURE=true
+#    depends_on:
+#      consul:
+#        condition: service_started
+#      redis:
+#        condition: service_started
+#      mysql:
+#        condition: service_healthy
+#    volumes: # 挂载
+#      - ./app/order/conf/test/:/opt/gomall/order/conf/test/

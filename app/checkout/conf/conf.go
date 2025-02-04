@@ -22,6 +22,7 @@ type Config struct {
 	Kitex    Kitex    `yaml:"kitex"`
 	MySQL    MySQL    `yaml:"mysql"`
 	Redis    Redis    `yaml:"redis"`
+	Kafka    Kafka    `yaml:"kafka"`
 	Registry Registry `yaml:"registry"`
 }
 
@@ -34,6 +35,10 @@ type Redis struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
+}
+
+type Kafka struct {
+	Address string `yaml:"address"`
 }
 
 type Kitex struct {
