@@ -60,17 +60,19 @@ type CachedProductQuery struct {
 }
 
 func (c CachedProductQuery) GetById(productId int) (product Product, err error) {
+	// 1.防止缓存穿透，缓存和存储层都不存在时，redis缓存一个空对象设置一个较短的过期时间防止占用过多的内存空间，或者用一个布隆过滤器
+
 	cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", productId)
 	cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
-	err = func() error {
+	err = func() error { // 如果redis获取到了
 		if err := cachedResult.Err(); err != nil {
 			return err
 		}
-		cachedResultByte, err := cachedResult.Bytes()
+		cachedResultByte, err := cachedResult.Bytes() // 缓存结果转换为字节数组
 		if err != nil {
 			return err
 		}
-		err = json.Unmarshal(cachedResultByte, &product)
+		err = json.Unmarshal(cachedResultByte, &product) // 将字节数组反序列化为 product 对象
 		if err != nil {
 			return err
 		}
@@ -82,7 +84,7 @@ func (c CachedProductQuery) GetById(productId int) (product Product, err error) 
 			return Product{}, nil
 		}
 		// 从数据库获取成功，放到缓存里
-		encoded, err := json.Marshal(product)
+		encoded, err := json.Marshal(product) // 结果序列化为 JSON 格式
 		if err != nil {
 			return product, nil
 		}
