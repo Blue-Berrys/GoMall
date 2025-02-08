@@ -60,35 +60,57 @@ type CachedProductQuery struct {
 }
 
 func (c CachedProductQuery) GetById(productId int) (product Product, err error) {
+	lockKey := fmt.Sprintf("%s_%s_%d_lock", c.prefix, "product_by_id", productId)
 	cachedKey := fmt.Sprintf("%s_%s_%d", c.prefix, "product_by_id", productId)
 	cachedResult := c.cacheClient.Get(c.productQuery.ctx, cachedKey)
-	err = func() error {
+	err = func() error { // 如果redis获取到了
 		if err := cachedResult.Err(); err != nil {
 			return err
 		}
-		cachedResultByte, err := cachedResult.Bytes()
+		cachedResultByte, err := cachedResult.Bytes() // 缓存结果转换为字节数组
 		if err != nil {
 			return err
 		}
-		err = json.Unmarshal(cachedResultByte, &product)
+		err = json.Unmarshal(cachedResultByte, &product) // 将字节数组反序列化为 product 对象
 		if err != nil {
 			return err
 		}
 		return nil
 	}()
-	if err != nil {
-		product, err = c.productQuery.GetById(productId) // 从数据库获取
-		if err != nil {
-			return Product{}, nil
-		}
-		// 从数据库获取成功，放到缓存里
-		encoded, err := json.Marshal(product)
-		if err != nil {
-			return product, nil
-		}
-		_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+	if err == nil {
+		return product, nil
 	}
-	return
+	// 2. 防止缓存击穿，不在缓存中的数据突然高流量访问，分布式锁保证同一时间只有一个请求访问数据库
+	maxRetries := 3
+	retryDelay := 100 * time.Millisecond
+	for i := 0; i < maxRetries; i++ {
+		if c.cacheClient.SetNX(c.productQuery.ctx, lockKey, "1", 5*time.Second).Val() {
+			// SetNX 命令尝试获取分布式锁。如果获取锁失败，说明有其他请求正在从数据库中读取数据，当前请求等待一段时间后重试。
+			// 如果获取成功了，别的就不能用这个了
+			defer c.cacheClient.Del(c.productQuery.ctx, lockKey) // defer 确保在函数返回时释放锁。
+			break
+		}
+		time.Sleep(retryDelay) // 如果获取锁失败，等待一段时间后重试
+	}
+
+	product, err = c.productQuery.GetById(productId) // 从数据库获取
+	if err != nil {                                  // 数据库中没有的时候
+		// 1.防止缓存穿透，缓存和存储层都不存在时，redis缓存一个空对象设置一个较短的过期时间防止占用过多的内存空间，或者用一个布隆过滤器
+		product := Product{}
+		encoded, err := json.Marshal(&product)
+		if err != nil {
+			return product, err
+		}
+		_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, 5*time.Minute).Err()
+		return product, nil
+	}
+	// 从数据库获取成功，放到缓存里
+	encoded, err := json.Marshal(product) // 结果序列化为 JSON 格式
+	if err != nil {
+		return product, nil
+	}
+	_ = c.cacheClient.Set(c.productQuery.ctx, cachedKey, encoded, time.Hour)
+	return product, nil
 }
 
 func (c CachedProductQuery) SearchProducts(q string) (products []*Product, err error) {

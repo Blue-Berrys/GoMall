@@ -8,7 +8,6 @@ import (
 	order "github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/order"
 	"github.com/cloudwego/kitex/pkg/kerrors"
 	"github.com/cloudwego/kitex/pkg/klog"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -25,12 +24,15 @@ func (s *PlaceOrderService) Run(req *order.PlaceOrderReq) (resp *order.PlaceOrde
 		err = kerrors.NewGRPCBizStatusError(500001, "items is empty")
 		return nil, err
 	}
+
+	// 收到订单请求之后，要分发给支付，邮件通知
+
 	//涉及到两个表的操作，要用事务,全部执行成功才会执行
 	err = mysql.DB.Transaction(func(tx *gorm.DB) error {
-		orderId, _ := uuid.NewRandom()
+		//orderId, _ := uuid.NewRandom()
 
 		o := &model.Order{ // 单条记录创建推荐指针，会自增ID
-			OrderId:      orderId.String(),
+			OrderId:      req.Id,
 			UserId:       req.UserId,
 			UserCurrency: req.UserCurrency,
 			Consignee: model.Consignee{
@@ -66,7 +68,7 @@ func (s *PlaceOrderService) Run(req *order.PlaceOrderReq) (resp *order.PlaceOrde
 		}
 		resp = &order.PlaceOrderResp{
 			Order: &order.OrderResult{
-				OrderId: orderId.String(),
+				OrderId: req.Id,
 			},
 		}
 		return nil

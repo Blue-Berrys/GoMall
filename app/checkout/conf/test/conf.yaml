@@ -10,7 +10,7 @@ kitex:
 
 registry:
   registry_address:
-    - consul:8500
+    - localhost:8500
   username: ""
   password: ""
 
@@ -18,7 +18,10 @@ mysql:
   dsn: "%s:%s@tcp(%s:%s)/payment?charset=utf8mb4&parseTime=True&loc=Local"
 
 redis:
-  address: "redis:6379"
+  address: "localhost:6378"
   username: ""
   password: ""
   db: 0
+
+kafka:
+  address: "localhost:9092"

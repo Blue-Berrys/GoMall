@@ -41,6 +41,11 @@ func (x *PlaceOrderReq) FastRead(buf []byte, _type int8, number int32) (offset i
 		if err != nil {
 			goto ReadFieldError
 		}
+	case 6:
+		offset, err = x.fastReadField6(buf, _type)
+		if err != nil {
+			goto ReadFieldError
+		}
 	default:
 		offset, err = fastpb.Skip(buf, _type, number)
 		if err != nil {
@@ -87,6 +92,11 @@ func (x *PlaceOrderReq) fastReadField5(buf []byte, _type int8) (offset int, err 
 	}
 	x.Items = append(x.Items, &v)
 	return offset, nil
+}
+
+func (x *PlaceOrderReq) fastReadField6(buf []byte, _type int8) (offset int, err error) {
+	x.Id, offset, err = fastpb.ReadString(buf, _type)
+	return offset, err
 }
 
 func (x *OrderItem) FastRead(buf []byte, _type int8, number int32) (offset int, err error) {
@@ -343,6 +353,7 @@ func (x *PlaceOrderReq) FastWrite(buf []byte) (offset int) {
 	offset += x.fastWriteField3(buf[offset:])
 	offset += x.fastWriteField4(buf[offset:])
 	offset += x.fastWriteField5(buf[offset:])
+	offset += x.fastWriteField6(buf[offset:])
 	return offset
 }
 
@@ -385,6 +396,14 @@ func (x *PlaceOrderReq) fastWriteField5(buf []byte) (offset int) {
 	for i := range x.GetItems() {
 		offset += fastpb.WriteMessage(buf[offset:], 5, x.GetItems()[i])
 	}
+	return offset
+}
+
+func (x *PlaceOrderReq) fastWriteField6(buf []byte) (offset int) {
+	if x.Id == "" {
+		return offset
+	}
+	offset += fastpb.WriteString(buf[offset:], 6, x.GetId())
 	return offset
 }
 
@@ -560,6 +579,7 @@ func (x *PlaceOrderReq) Size() (n int) {
 	n += x.sizeField3()
 	n += x.sizeField4()
 	n += x.sizeField5()
+	n += x.sizeField6()
 	return n
 }
 
@@ -602,6 +622,14 @@ func (x *PlaceOrderReq) sizeField5() (n int) {
 	for i := range x.GetItems() {
 		n += fastpb.SizeMessage(5, x.GetItems()[i])
 	}
+	return n
+}
+
+func (x *PlaceOrderReq) sizeField6() (n int) {
+	if x.Id == "" {
+		return n
+	}
+	n += fastpb.SizeString(6, x.GetId())
 	return n
 }
 
@@ -774,6 +802,7 @@ var fieldIDToName_PlaceOrderReq = map[int32]string{
 	3: "Address",
 	4: "Email",
 	5: "Items",
+	6: "Id",
 }
 
 var fieldIDToName_OrderItem = map[int32]string{

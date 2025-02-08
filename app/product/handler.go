@@ -29,3 +29,10 @@ func (s *ProductCatalogServiceImpl) SearchProducts(ctx context.Context, req *pro
 
 	return resp, err
 }
+
+// BatchGetProduct implements the ProductCatalogServiceImpl interface.
+func (s *ProductCatalogServiceImpl) BatchGetProduct(ctx context.Context, req *product.BatchGetProductReq) (resp *product.BatchGetProductResp, err error) {
+	resp, err = service.NewBatchGetProductService(ctx).Run(req)
+
+	return resp, err
+}

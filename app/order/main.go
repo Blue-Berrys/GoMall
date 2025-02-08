@@ -26,7 +26,8 @@ var (
 )
 
 func main() {
-	_ = godotenv.Load("/opt/gomall/product/.env")
+	//_ = godotenv.Load("/opt/gomall/product/.env")
+	_ = godotenv.Load(".env")
 	mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
 	p := mtl.InitTracing(ServiceName)
 	defer p.Shutdown(context.Background()) //会把链路数据上传完再关闭
