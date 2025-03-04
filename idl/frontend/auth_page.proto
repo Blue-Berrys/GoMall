@@ -17,6 +17,7 @@ message RegisterRep {
   string email = 1 [(api.form)="email"];
   string password = 2 [(api.form)="password"]; // post过来用form
   string password_confirm = 3 [(api.form)="password_confirm"];
+  string role = 4 [(api.form)="role"];
 }
 
 service AuthService { //服务名

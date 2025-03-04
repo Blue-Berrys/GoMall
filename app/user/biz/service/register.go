@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Blue-Berrys/GoMall/app/user/biz/dal/mysql"
 	"github.com/Blue-Berrys/GoMall/app/user/biz/model"
+	"github.com/Blue-Berrys/GoMall/common/casbin"
 	user "github.com/Blue-Berrys/GoMall/rpc_gen/kitex_gen/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -33,6 +34,12 @@ func (s *RegisterService) Run(req *user.RegisterRep) (resp *user.RegisterResp, e
 		Email:    req.Email,
 		Password: string(passwordHash),
 	}
+	if req.Role == "buyer" {
+		casbin.AddUserToGroup(req.Email, casbin.CustomerGroup)
+	} else {
+		casbin.AddUserToGroup(req.Email, casbin.MerchantGroup)
+	}
+	//casbin.AddUserToGroup(req.Email)
 	if err = model.Create(mysql.DB, newUser); err != nil {
 		return nil, err
 	}

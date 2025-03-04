@@ -11,7 +11,7 @@ gen-demo-thrift:
 
 .PHONY:gen-frontend
 gen-frontend:
-	@cd app/frontend &&	${CWGO} server --type HTTP --idl  ../../idl/frontend/auth_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
+	@cd app/frontend &&	cwgo server --type HTTP --idl  ../../idl/frontend/auth_page.proto --service frontend -module ${ROOT_MOD}/app/frontend -I ../../idl/
 
 .PHONY:gen-user-client
 gen-user-client:

@@ -12,9 +12,20 @@ func GlobalAuth() app.HandlerFunc {
 		// 方便业务逻辑获取用户身份相关的
 		// 从session中获取用户信息，放在context
 		session := sessions.Default(c)
-		userId := session.Get("user_id")
-		ctx = context.WithValue(ctx, frontendUtils.SessionUserId, userId) //返回一个新的 context，其中包含了 userId 的值
-		c.Next(ctx)                                                       //将带有 userId 的新 context 传递下去，这样后续的处理中就可以从 context 中获取 userId
+		if session != nil {
+			var err error
+			userId := session.Get("user_id")
+			if err != nil || userId == nil {
+				// 处理错误或nil值，例如记录日志或返回默认值
+				c.Next(ctx)
+				return
+			}
+			ctx = context.WithValue(ctx, frontendUtils.SessionUserId, userId) //返回一个新的 context，其中包含了 userId 的值
+			c.Next(ctx)                                                       //将带有 userId 的新 context 传递下去，这样后续的处理中就可以从 context 中获取 userId
+		} else {
+			// 处理session为nil的情况
+			c.Next(ctx)
+		} //将带有 userId 的新 context 传递下去，这样后续的处理中就可以从 context 中获取 userId
 	}
 }
 

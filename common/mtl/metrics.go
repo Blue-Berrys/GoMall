@@ -1,6 +1,7 @@
 package mtl
 
 import (
+	"fmt"
 	"github.com/cloudwego/kitex/pkg/registry"
 	"github.com/cloudwego/kitex/server"
 	consul "github.com/kitex-contrib/registry-consul"
@@ -19,7 +20,8 @@ func InitMetric(serviceName, metricsPort, registryAddr string) (registry.Registr
 	Registry.MustRegister(collectors.NewGoCollector())
 	//注册与当前进程相关的指标，例如：进程 CPU 使用率（process_cpu_seconds_total）进程内存使用（process_resident_memory_bytes
 	Registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
-	r, _ := consul.NewConsulRegister(registryAddr)
+	r, err := consul.NewConsulRegister(registryAddr)
+	fmt.Println(r, err)
 	// 定义服务注册信息
 	addr, _ := net.ResolveTCPAddr("tcp", metricsPort) // 将端口号（metricsPort）解析为 TCP 地址对象
 	registryInfo := &registry.Info{                   // 定义 Prometheus 服务的注册信息

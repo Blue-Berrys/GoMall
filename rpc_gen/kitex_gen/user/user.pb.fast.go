@@ -29,6 +29,11 @@ func (x *RegisterRep) FastRead(buf []byte, _type int8, number int32) (offset int
 		if err != nil {
 			goto ReadFieldError
 		}
+	case 4:
+		offset, err = x.fastReadField4(buf, _type)
+		if err != nil {
+			goto ReadFieldError
+		}
 	default:
 		offset, err = fastpb.Skip(buf, _type, number)
 		if err != nil {
@@ -54,6 +59,11 @@ func (x *RegisterRep) fastReadField2(buf []byte, _type int8) (offset int, err er
 
 func (x *RegisterRep) fastReadField3(buf []byte, _type int8) (offset int, err error) {
 	x.PasswordConfirm, offset, err = fastpb.ReadString(buf, _type)
+	return offset, err
+}
+
+func (x *RegisterRep) fastReadField4(buf []byte, _type int8) (offset int, err error) {
+	x.Role, offset, err = fastpb.ReadString(buf, _type)
 	return offset, err
 }
 
@@ -149,6 +159,7 @@ func (x *RegisterRep) FastWrite(buf []byte) (offset int) {
 	offset += x.fastWriteField1(buf[offset:])
 	offset += x.fastWriteField2(buf[offset:])
 	offset += x.fastWriteField3(buf[offset:])
+	offset += x.fastWriteField4(buf[offset:])
 	return offset
 }
 
@@ -173,6 +184,14 @@ func (x *RegisterRep) fastWriteField3(buf []byte) (offset int) {
 		return offset
 	}
 	offset += fastpb.WriteString(buf[offset:], 3, x.GetPasswordConfirm())
+	return offset
+}
+
+func (x *RegisterRep) fastWriteField4(buf []byte) (offset int) {
+	if x.Role == "" {
+		return offset
+	}
+	offset += fastpb.WriteString(buf[offset:], 4, x.GetRole())
 	return offset
 }
 
@@ -240,6 +259,7 @@ func (x *RegisterRep) Size() (n int) {
 	n += x.sizeField1()
 	n += x.sizeField2()
 	n += x.sizeField3()
+	n += x.sizeField4()
 	return n
 }
 
@@ -264,6 +284,14 @@ func (x *RegisterRep) sizeField3() (n int) {
 		return n
 	}
 	n += fastpb.SizeString(3, x.GetPasswordConfirm())
+	return n
+}
+
+func (x *RegisterRep) sizeField4() (n int) {
+	if x.Role == "" {
+		return n
+	}
+	n += fastpb.SizeString(4, x.GetRole())
 	return n
 }
 
@@ -328,6 +356,7 @@ var fieldIDToName_RegisterRep = map[int32]string{
 	1: "Email",
 	2: "Password",
 	3: "PasswordConfirm",
+	4: "Role",
 }
 
 var fieldIDToName_RegisterResp = map[int32]string{

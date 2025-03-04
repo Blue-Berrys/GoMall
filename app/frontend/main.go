@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/frontend/infra/rpc"
 	"github.com/Blue-Berrys/GoMall/app/frontend/middleware"
 	frontendUtils "github.com/Blue-Berrys/GoMall/app/frontend/utlis"
@@ -42,10 +43,10 @@ var (
 )
 
 func main() {
-	if err := godotenv.Load("/opt/gomall/frontend/.env"); err != nil {
-		panic(err)
-	}
+	//godotenv.Load("/opt/gomall/frontend/.env")
+	godotenv.Load(".env")
 	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
+	fmt.Println("consul info:", consul, "registryInfo:", registryInfo)
 	defer consul.Deregister(registryInfo) // 这个hertz在停止服务的时候可以移除(反注册)prometheus实例
 	p := hertzotelprovider.NewOpenTelemetryProvider(
 		hertzotelprovider.WithServiceName(ServiceName),

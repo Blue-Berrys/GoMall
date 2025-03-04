@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/Blue-Berrys/GoMall/app/frontend/infra/rpc"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 
@@ -22,6 +23,7 @@ func NewGetProductService(Context context.Context, RequestContext *app.RequestCo
 func (h *GetProductService) Run(req *product.ProductReq) (resp map[string]any, err error) {
 	// todo edit your code
 	p, err := rpc.ProductClient.GetProduct(h.Context, &rpcproduct.GetProductReq{Id: req.Id})
+	fmt.Println(p)
 	if err != nil {
 		return nil, err
 	}

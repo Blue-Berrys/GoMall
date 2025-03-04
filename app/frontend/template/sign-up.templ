@@ -15,8 +15,23 @@
         <label for="password_confirm" class="form-label">Password Confirm {{template "required"}}</label>
         <input type="password_confirm" class="form-control" id="password_confirm" name="password_confirm">
       </div>
+      <div class="mb-3">
+          <label>Role</label><br>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="role" id="role_buyer" value="buyer" checked>
+            <label class="form-check-label" for="role_buyer">
+              Buyer
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="role" id="role_merchant" value="merchant">
+            <label class="form-check-label" for="role_merchant">
+              Merchant
+            </label>
+          </div>
+      </div>
       <div class="mb-3 form-check">
-        Already have a account, click here to <a href="/sign-in">Sign Up.</a>
+        Already have a account, click here to <a href="/sign-in">Sign In.</a>
       </div>
       <button type="submit" class="btn btn-primary">Sign up</button>
     </form>
