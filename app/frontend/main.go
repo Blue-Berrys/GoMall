@@ -42,9 +42,8 @@ var (
 )
 
 func main() {
-	if err := godotenv.Load("/opt/gomall/frontend/.env"); err != nil {
-		panic(err)
-	}
+	//_ = godotenv.Load("/opt/gomall/frontend/.env")
+	_ = godotenv.Load(".env")
 	consul, registryInfo := mtl.InitMetric(ServiceName, MetricsPort, RegistryAddr)
 	defer consul.Deregister(registryInfo) // 这个hertz在停止服务的时候可以移除(反注册)prometheus实例
 	p := hertzotelprovider.NewOpenTelemetryProvider(
